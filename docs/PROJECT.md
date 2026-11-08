@@ -45,3 +45,16 @@ Measured values only. Leave "pending measurement" until a real figure is recorde
 | fix-2 | gemini-3.8-flash | no | 85052 | 798 | 0 | 794365 | 0.1264 |
 
 Total: $0.6008. Prices: Anthropic list prices.
+
+## Factory run linear-regex-nfa (measured from API usage)
+
+| Phase | Model | Batch | Input | Output | Cache write | Cache read | Cost (USD) |
+|---|---|---|---|---|---|---|---|
+| generation | gemini-3.8-flash | yes | 6459 | 55132 | 0 | 0 | 0.1058 |
+| fix-1 | gemini-3.8-flash | no | 94817 | 1530 | 0 | 887694 | 0.1434 |
+| fix-2 | gemini-3.8-flash | no | 95521 | 4431 | 0 | 1016814 | 0.1645 |
+| fix-3 | gemini-3.8-flash | no | 64766 | 480 | 0 | 453336 | 0.0844 |
+| fix-4 | gemini-3.8-flash | no | 77278 | 717 | 0 | 602677 | 0.1058 |
+| audit | gemini-3.1-flash-lite | no | 0 | 0 | 0 | 0 | 0.0000 |
+
+Total: $0.6040. Prices: Anthropic list prices.
