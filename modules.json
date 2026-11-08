@@ -38,14 +38,8 @@
         "IF the pattern is '[a-' or '(abc' THEN compile throws RegexSyntaxError with code 'PARSE_ERROR' and a position of at least 0",
         "WHEN pattern length exceeds default maxPatternLength 4096 or nesting exceeds maxDepth 64 THEN compile throws LimitExceededError with code 'LIMIT_EXCEEDED'"
       ],
-      "owns": [
-        "src/parser/",
-        "test/parser/"
-      ],
-      "implements": [
-        "interfaces/types.ts",
-        "interfaces/ast.ts"
-      ],
+      "owns": ["src/parser/", "test/parser/"],
+      "implements": ["interfaces/types.ts", "interfaces/ast.ts"],
       "consumes": [],
       "depends_on": []
     },
@@ -56,20 +50,10 @@
         "WHEN compile('^.$').test('\\uD83D\\uDE00') runs THEN it returns true, because matching is by code point (U+1F600 is one character)",
         "WHEN an NFA is constructed for 'a|b' THEN state count is at least 4 and matches input 'a' returning step count of at least 1"
       ],
-      "owns": [
-        "src/nfa/",
-        "test/nfa/"
-      ],
-      "implements": [
-        "interfaces/nfa.ts"
-      ],
-      "consumes": [
-        "interfaces/types.ts",
-        "interfaces/ast.ts"
-      ],
-      "depends_on": [
-        "parser"
-      ]
+      "owns": ["src/nfa/", "test/nfa/"],
+      "implements": ["interfaces/nfa.ts"],
+      "consumes": ["interfaces/types.ts", "interfaces/ast.ts"],
+      "depends_on": ["parser"]
     },
     {
       "id": "engines",
@@ -81,21 +65,10 @@
         "WHEN compile('(?P<id>[a-z]+):(?P<val>\\d+)').exec('foo:42') runs THEN groups equals { id: 'foo', val: '42' } and index is 0",
         "WHEN lazy DFA encounters more than 10000 states THEN LRU eviction occurs and execution falls back to 'pike'"
       ],
-      "owns": [
-        "src/engine/",
-        "test/engine/"
-      ],
-      "implements": [
-        "interfaces/engine.ts"
-      ],
-      "consumes": [
-        "interfaces/types.ts",
-        "interfaces/nfa.ts"
-      ],
-      "depends_on": [
-        "nfa",
-        "parser"
-      ]
+      "owns": ["src/engine/", "test/engine/"],
+      "implements": ["interfaces/engine.ts"],
+      "consumes": ["interfaces/types.ts", "interfaces/nfa.ts"],
+      "depends_on": ["nfa", "parser"]
     },
     {
       "id": "api",
@@ -104,23 +77,10 @@
         "WHEN replace('hello world', '$2, $1') runs with pattern '(\\w+)\\s(\\w+)' THEN it returns 'world, hello'",
         "WHEN matchAll is invoked with pattern '\\d+' on 'item 10 and 20' THEN match array has length 2 and matches '10' and '20'"
       ],
-      "owns": [
-        "src/api/",
-        "test/api/"
-      ],
-      "implements": [
-        "interfaces/api.ts"
-      ],
-      "consumes": [
-        "interfaces/types.ts",
-        "interfaces/ast.ts",
-        "interfaces/engine.ts"
-      ],
-      "depends_on": [
-        "engines",
-        "nfa",
-        "parser"
-      ]
+      "owns": ["src/api/", "test/api/"],
+      "implements": ["interfaces/api.ts"],
+      "consumes": ["interfaces/types.ts", "interfaces/ast.ts", "interfaces/engine.ts"],
+      "depends_on": ["engines", "nfa", "parser"]
     },
     {
       "id": "conformance",
@@ -129,20 +89,10 @@
         "WHEN the CI conformance job compares 50000 seeded random pattern and input pairs from the subset with re2-wasm THEN at least 99 percent agree on match, index and captures and the job prints the agreement percentage",
         "WHEN docs/PROJECT.md is read THEN it contains section heading 'Line comparison metrics' with empty results table"
       ],
-      "owns": [
-        "src/conformance/",
-        "test/conformance/",
-        "docs/"
-      ],
+      "owns": ["src/conformance/", "test/conformance/", "docs/"],
       "implements": [],
-      "consumes": [
-        "interfaces/types.ts",
-        "interfaces/api.ts"
-      ],
-      "depends_on": [
-        "api",
-        "parser"
-      ]
+      "consumes": ["interfaces/types.ts", "interfaces/api.ts"],
+      "depends_on": ["api", "parser"]
     }
   ]
 }

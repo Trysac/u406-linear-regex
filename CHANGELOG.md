@@ -9,4 +9,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- * Implement RE2-subset AST parser, typed error hierarchy, and limit enforcement.
 - Initial project structure from the factory utility template.
