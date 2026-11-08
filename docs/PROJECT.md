@@ -28,6 +28,33 @@ Measured values only. Leave "pending measurement" until a real figure is recorde
 
 | Metric | Value | Source |
 |---|---|---|
-| Tokens (input / output) | pending measurement | factory ledger |
+| Tokens (input / output) | 2849085 / 64451 | factory ledger |
 | Hours (human) | pending measurement | time log |
-| Cost (USD) | pending measurement | factory ledger |
+| Cost (USD) | 0.6008 | factory ledger |
+
+## Factory run linear-regex-parser (measured from API usage)
+
+| Phase | Model | Batch | Input | Output | Cache write | Cache read | Cost (USD) |
+|---|---|---|---|---|---|---|---|
+| generation | gemini-3.8-flash | yes | 6213 | 48712 | 0 | 0 | 0.0937 |
+| fix-1 | gemini-3.8-flash | no | 93099 | 1556 | 0 | 947768 | 0.1467 |
+| fix-2 | gemini-3.8-flash | no | 69067 | 3186 | 0 | 202886 | 0.0790 |
+| fix-3 | gemini-3.8-flash | no | 16951 | 91 | 0 | 12753 | 0.0140 |
+| audit | gemini-3.1-flash-lite | no | 28882 | 550 | 0 | 32542 | 0.0089 |
+| fix-1 | gemini-3.8-flash | no | 80522 | 9558 | 0 | 478985 | 0.1322 |
+| fix-2 | gemini-3.8-flash | no | 85052 | 798 | 0 | 794365 | 0.1264 |
+
+Total: $0.6008. Prices: Anthropic list prices.
+
+## Factory run linear-regex-nfa (measured from API usage)
+
+| Phase | Model | Batch | Input | Output | Cache write | Cache read | Cost (USD) |
+|---|---|---|---|---|---|---|---|
+| generation | gemini-3.8-flash | yes | 6459 | 55132 | 0 | 0 | 0.1058 |
+| fix-1 | gemini-3.8-flash | no | 94817 | 1530 | 0 | 887694 | 0.1434 |
+| fix-2 | gemini-3.8-flash | no | 95521 | 4431 | 0 | 1016814 | 0.1645 |
+| fix-3 | gemini-3.8-flash | no | 64766 | 480 | 0 | 453336 | 0.0844 |
+| fix-4 | gemini-3.8-flash | no | 77278 | 717 | 0 | 602677 | 0.1058 |
+| audit | gemini-3.1-flash-lite | no | 0 | 0 | 0 | 0 | 0.0000 |
+
+Total: $0.6040. Prices: Anthropic list prices.

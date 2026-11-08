@@ -1,4 +1,4 @@
-import type { CompileOptions } from "./types";
+import type { CompileOptions } from "./types.js";
 
 export interface FlagSet {
   readonly caseInsensitive: boolean;
