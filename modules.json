@@ -1,0 +1,148 @@
+{
+  "schema": "modules.v1",
+  "project": "linear-regex",
+  "lang": "typescript",
+  "interfaces": [
+    {
+      "path": "interfaces/types.ts",
+      "content": "export interface RegexTraceEvent {\n  readonly type: \"dfa_cache_hit\" | \"dfa_cache_miss\" | \"dfa_state_evicted\" | \"pike_vm_fallback\";\n  readonly stateId?: number;\n  readonly position?: number;\n  readonly count?: number;\n}\n\nexport interface CompileOptions {\n  readonly maxDfaStates?: number;\n  readonly maxDepth?: number;\n  readonly maxPatternLength?: number;\n  readonly onEvent?: (event: RegexTraceEvent) => void;\n}\n\nexport interface EngineStats {\n  readonly steps: number;\n  readonly engine: \"dfa\" | \"pike\";\n}\n\nexport interface RegexMatch {\n  readonly match: string;\n  readonly index: number;\n  readonly length: number;\n  readonly captures: readonly (string | undefined)[];\n  readonly groups: Readonly<Record<string, string | undefined>>;\n}\n\nexport declare abstract class LinearRegexError extends Error {\n  readonly code: string;\n  constructor(message: string, code: string);\n}\n\nexport declare class UnsupportedFeatureError extends LinearRegexError {\n  readonly code: \"UNSUPPORTED_FEATURE\";\n  constructor(message: string);\n}\n\nexport declare class RegexSyntaxError extends LinearRegexError {\n  readonly code: \"PARSE_ERROR\";\n  readonly position: number;\n  constructor(message: string, position: number);\n}\n\nexport declare class LimitExceededError extends LinearRegexError {\n  readonly code: \"LIMIT_EXCEEDED\";\n  constructor(message: string);\n}\n",
+      "sha256": "fcfc276b3f992000b5d231156aaca8f512d03057fb0d0728b9848f21fcc537ca"
+    },
+    {
+      "path": "interfaces/ast.ts",
+      "content": "import type { CompileOptions } from \"./types\";\n\nexport interface FlagSet {\n  readonly caseInsensitive: boolean;\n  readonly multiline: boolean;\n  readonly dotAll: boolean;\n  readonly ungreedy: boolean;\n}\n\nexport type AstNode =\n  | { readonly type: \"literal\"; readonly codePoint: number }\n  | { readonly type: \"dot\" }\n  | {\n      readonly type: \"charClass\";\n      readonly ranges: readonly (readonly [number, number])[];\n      readonly inverted: boolean;\n    }\n  | {\n      readonly type: \"anchor\";\n      readonly kind:\n        | \"start_line\"\n        | \"end_line\"\n        | \"start_text\"\n        | \"end_text\"\n        | \"word_boundary\"\n        | \"not_word_boundary\";\n    }\n  | {\n      readonly type: \"repetition\";\n      readonly child: AstNode;\n      readonly min: number;\n      readonly max: number;\n      readonly greedy: boolean;\n    }\n  | { readonly type: \"concat\"; readonly children: readonly AstNode[] }\n  | { readonly type: \"alt\"; readonly children: readonly AstNode[] }\n  | {\n      readonly type: \"group\";\n      readonly child: AstNode;\n      readonly capturing: boolean;\n      readonly index?: number;\n      readonly name?: string;\n    };\n\nexport interface AstRoot {\n  readonly root: AstNode;\n  readonly flags: FlagSet;\n  readonly captureCount: number;\n  readonly groupNames: ReadonlyMap<string, number>;\n}\n\nexport declare function parseRegex(\n  pattern: string,\n  flags?: string,\n  options?: CompileOptions,\n): AstRoot;\n",
+      "sha256": "916202ac9c7a3658f4b182daf302255eefc445c75448069732228a44ef9214b1"
+    },
+    {
+      "path": "interfaces/nfa.ts",
+      "content": "import type { AstRoot } from \"./ast\";\n\nexport interface NfaTransition {\n  readonly fromState: number;\n  readonly toState: number;\n  readonly kind: \"epsilon\" | \"range\" | \"anchor\";\n  readonly min?: number;\n  readonly max?: number;\n  readonly anchorKind?:\n    | \"start_line\"\n    | \"end_line\"\n    | \"start_text\"\n    | \"end_text\"\n    | \"word_boundary\"\n    | \"not_word_boundary\";\n  readonly captureSlot?: number;\n}\n\nexport interface NfaGraph {\n  readonly startState: number;\n  readonly matchState: number;\n  readonly stateCount: number;\n  readonly captureCount: number;\n  readonly groupNames: ReadonlyMap<string, number>;\n  readonly transitionsFrom: (state: number) => readonly NfaTransition[];\n}\n\nexport declare function buildNfa(ast: AstRoot): NfaGraph;\n",
+      "sha256": "e35764ae86f107875fa7a1eb870fd383861b299736520308a369cfcfab85648b"
+    },
+    {
+      "path": "interfaces/engine.ts",
+      "content": "import type { NfaGraph } from \"./nfa\";\nimport type { CompileOptions, EngineStats, RegexMatch } from \"./types\";\n\nexport interface ExecutionResult {\n  readonly match: RegexMatch | null;\n  readonly matched: boolean;\n  readonly stats: EngineStats;\n}\n\nexport interface EngineExecutor {\n  test(\n    input: string,\n    startIndex?: number,\n  ): { readonly matched: boolean; readonly stats: EngineStats };\n  exec(input: string, startIndex?: number): ExecutionResult;\n}\n\nexport declare function createExecutor(nfa: NfaGraph, options?: CompileOptions): EngineExecutor;\n",
+      "sha256": "a55e4ac0e090279c83d984c4ede52c289aa916efd390c38c15a674d07205fba8"
+    },
+    {
+      "path": "interfaces/api.ts",
+      "content": "import type { CompileOptions, RegexMatch } from \"./types\";\n\nexport interface LinearRegex {\n  test(input: string): boolean;\n  exec(input: string): RegexMatch | null;\n  matchAll(input: string): IterableIterator<RegexMatch>;\n  replace(input: string, replacement: string | ((match: RegexMatch) => string)): string;\n  lastStats(): { steps: number; engine: \"dfa\" | \"pike\" };\n}\n\nexport declare function compile(\n  pattern: string,\n  flags?: string,\n  options?: CompileOptions,\n): LinearRegex;\nexport declare function replace(\n  input: string,\n  replacement: string | ((match: RegexMatch) => string),\n  pattern: string,\n  flags?: string,\n  options?: CompileOptions,\n): string;\n",
+      "sha256": "bd7bfaee20e68dc4a51a1d44c5271f864d87e835e4e94140082acccffda00238"
+    }
+  ],
+  "modules": [
+    {
+      "id": "parser",
+      "goal": "Implement error classes, regex tokens and AST parser with RE2 subset validation and limit enforcement.",
+      "acceptance": [
+        "IF the pattern contains a backreference '(a)\\1' or lookaround '(?=a)' THEN compile throws UnsupportedFeatureError with code 'UNSUPPORTED_FEATURE'",
+        "IF the pattern is '[a-' or '(abc' THEN compile throws RegexSyntaxError with code 'PARSE_ERROR' and a position of at least 0",
+        "WHEN pattern length exceeds default maxPatternLength 4096 or nesting exceeds maxDepth 64 THEN compile throws LimitExceededError with code 'LIMIT_EXCEEDED'"
+      ],
+      "owns": [
+        "src/parser/",
+        "test/parser/"
+      ],
+      "implements": [
+        "interfaces/types.ts",
+        "interfaces/ast.ts"
+      ],
+      "consumes": [],
+      "depends_on": []
+    },
+    {
+      "id": "nfa",
+      "goal": "Build Thompson NFA with epsilon transitions, character ranges, anchors and UTF-16 code point decoding.",
+      "acceptance": [
+        "WHEN compile('^.$').test('\\uD83D\\uDE00') runs THEN it returns true, because matching is by code point (U+1F600 is one character)",
+        "WHEN an NFA is constructed for 'a|b' THEN state count is at least 4 and matches input 'a' returning step count of at least 1"
+      ],
+      "owns": [
+        "src/nfa/",
+        "test/nfa/"
+      ],
+      "implements": [
+        "interfaces/nfa.ts"
+      ],
+      "consumes": [
+        "interfaces/types.ts",
+        "interfaces/ast.ts"
+      ],
+      "depends_on": [
+        "parser"
+      ]
+    },
+    {
+      "id": "engines",
+      "goal": "Implement dual execution engines with lazy DFA (LRU cache) for test/exec and Pike VM for full submatch extraction.",
+      "acceptance": [
+        "WHEN compile('(a+)+$').test runs on 'a'.repeat(n) + 'b' for n = 10000 and n = 100000 THEN both return false and lastStats().steps for n = 100000 is at most 11 times the value for n = 10000",
+        "WHEN each of the 10 documented pathological patterns, including '(a|aa)*b', runs on inputs of 10000 and 100000 code points THEN the step ratio stays at most 11",
+        "WHEN compile('(?:a|b)*c').test('abac') runs THEN it returns true and lastStats().engine is 'dfa'",
+        "WHEN compile('(?P<id>[a-z]+):(?P<val>\\d+)').exec('foo:42') runs THEN groups equals { id: 'foo', val: '42' } and index is 0",
+        "WHEN lazy DFA encounters more than 10000 states THEN LRU eviction occurs and execution falls back to 'pike'"
+      ],
+      "owns": [
+        "src/engine/",
+        "test/engine/"
+      ],
+      "implements": [
+        "interfaces/engine.ts"
+      ],
+      "consumes": [
+        "interfaces/types.ts",
+        "interfaces/nfa.ts"
+      ],
+      "depends_on": [
+        "nfa",
+        "parser"
+      ]
+    },
+    {
+      "id": "api",
+      "goal": "Provide LinearRegex public facade, compile, replace, matchAll and lastStats tracking.",
+      "acceptance": [
+        "WHEN replace('hello world', '$2, $1') runs with pattern '(\\w+)\\s(\\w+)' THEN it returns 'world, hello'",
+        "WHEN matchAll is invoked with pattern '\\d+' on 'item 10 and 20' THEN match array has length 2 and matches '10' and '20'"
+      ],
+      "owns": [
+        "src/api/",
+        "test/api/"
+      ],
+      "implements": [
+        "interfaces/api.ts"
+      ],
+      "consumes": [
+        "interfaces/types.ts",
+        "interfaces/ast.ts",
+        "interfaces/engine.ts"
+      ],
+      "depends_on": [
+        "engines",
+        "nfa",
+        "parser"
+      ]
+    },
+    {
+      "id": "conformance",
+      "goal": "Deliver CI differential conformance testing against re2-wasm, fast-check property tests and documentation.",
+      "acceptance": [
+        "WHEN the CI conformance job compares 50000 seeded random pattern and input pairs from the subset with re2-wasm THEN at least 99 percent agree on match, index and captures and the job prints the agreement percentage",
+        "WHEN docs/PROJECT.md is read THEN it contains section heading 'Line comparison metrics' with empty results table"
+      ],
+      "owns": [
+        "src/conformance/",
+        "test/conformance/",
+        "docs/"
+      ],
+      "implements": [],
+      "consumes": [
+        "interfaces/types.ts",
+        "interfaces/api.ts"
+      ],
+      "depends_on": [
+        "api",
+        "parser"
+      ]
+    }
+  ]
+}
