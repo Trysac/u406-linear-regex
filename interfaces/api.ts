@@ -1,4 +1,4 @@
-import type { CompileOptions, RegexMatch } from "./types";
+import type { CompileOptions, RegexMatch } from "./types.js";
 
 export interface LinearRegex {
   test(input: string): boolean;

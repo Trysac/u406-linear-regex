@@ -1,5 +1,5 @@
-import type { NfaGraph } from "./nfa";
-import type { CompileOptions, EngineStats, RegexMatch } from "./types";
+import type { NfaGraph } from "./nfa.js";
+import type { CompileOptions, EngineStats, RegexMatch } from "./types.js";
 
 export interface ExecutionResult {
   readonly match: RegexMatch | null;
