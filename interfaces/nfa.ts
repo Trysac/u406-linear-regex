@@ -1,4 +1,4 @@
-import type { AstRoot } from "./ast";
+import type { AstRoot } from "./ast.js";
 
 export interface NfaTransition {
   readonly fromState: number;
