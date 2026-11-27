@@ -1,6 +1,6 @@
 import type { AstNode, AstRoot } from "../../interfaces/ast.js";
 import type { NfaGraph, NfaTransition } from "../../interfaces/nfa.js";
-import { LimitExceededError } from "./errors.js";
+import { LimitExceededError } from "../parser/types.js";
 import { getCaseFoldedCodePoints, invertRanges, normalizeRanges } from "./utf16.js";
 
 interface Fragment {

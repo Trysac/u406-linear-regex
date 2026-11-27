@@ -1,6 +1,6 @@
 export type { NfaGraph, NfaTransition } from "../../interfaces/nfa.js";
+export { LimitExceededError, LinearRegexError } from "../parser/types.js";
 export { buildNfa } from "./builder.js";
-export { LimitExceededError, LinearRegexError } from "./errors.js";
 export { simulateNfa } from "./simulate.js";
 export {
   codePointOffsets,
