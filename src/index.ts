@@ -1,8 +1,18 @@
 /**
  * Public entry point of @trysac/linear-regex.
  *
- * Replace this placeholder with the utility's real API. Keep every export documented and covered by tests.
+ * `compile` builds a linear-time matcher (lazy DFA with a Pike VM fallback); `replace` is a
+ * one-shot helper. Every error extends `LinearRegexError` and carries a machine-readable `code`.
  */
+
+export type { CompileOptions, EngineStats, LinearRegex, RegexMatch } from "./api/index.js";
+export { compile, DEFAULT_MAX_INPUT_LENGTH, lastStats, replace } from "./api/index.js";
+export {
+  LimitExceededError,
+  LinearRegexError,
+  RegexSyntaxError,
+  UnsupportedFeatureError,
+} from "./parser/index.js";
 
 /**
  * Builds a greeting for `name`.
